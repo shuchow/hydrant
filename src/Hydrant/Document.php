@@ -8,7 +8,7 @@ class Document
     protected $data;
     protected $originalData;
     protected $persistenceType;
-    protected $isDirty;
+    protected $isDirty = false;
 
     protected static $collectionName = 'default';
 
@@ -99,7 +99,7 @@ class Document
             throw new \Exception("Cannot persist embedded objects directly");
         }
 
-        if (!$this->isDirty()) {
+        if (!$this->isDirty && $this->isManaged) {
             return;
         }
 
@@ -149,7 +149,7 @@ class Document
         Connection::getCollection(static::$collectionName)->remove(['_id' => $this->_id]);
     }
 
-    public static function hydrate($data = [], $isEmbedded)
+    public static function hydrate($data = [], $isEmbedded = false)
     {
         if (!$data){
             return null;
@@ -172,6 +172,7 @@ class Document
             if ($isEmbedded) {
                 $obj->setEmbedded($isEmbedded);
             }
+            return $obj;
         }
     }
 

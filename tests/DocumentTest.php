@@ -93,6 +93,14 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         $doc1->delete();
 
         $this->assertNull(Connection::getCollection('default')->findOne(['_id' => $doc1->_id]));
+
+        $doc2 = new Document;
+        $doc2->setEmbedded(true);
+        try {
+            $doc2->delete();
+            $this->fail("Should not be able to delete an embedded document");
+        } catch (Exception $e) {
+        }
     }
 
     public function testFindMany()
