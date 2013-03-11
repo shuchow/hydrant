@@ -6,13 +6,16 @@ class Document
     protected $isEmebdded = false;
     protected $isManaged = false;
     protected $data;
+    protected $originalData;
     protected $persistenceType;
+    protected $isDirty;
 
     protected static $collectionName = 'default';
 
     public function __construct($data = [])
     {
         $this->data = $data;
+        $this->originalData = [];
         $this->setPersistenceType($data['_class']);
         unset($this->data['_class']);
     }
@@ -24,7 +27,26 @@ class Document
 
     public function __set($property, $value)
     {
+        if ($this->isManaged) {
+            if (!$this->originalData) {
+                $this->originalData = $this->data;
+            }
+            $this->isDirty = true;
+        }
         $this->data[$property] = $value;
+    }
+
+    public function __unset($property)
+    {
+        if ($this->isManaged) {
+            $this->isDirty = true;
+        }
+        unset($this->data[$property]);
+    }
+
+    public function __isset($property)
+    {
+        return isset($this->data[$property]);
     }
 
     public function setManaged($managed)
@@ -47,8 +69,40 @@ class Document
         return $this->data;
     }
 
+    public function getOriginalData()
+    {
+        return $this->originalData;
+    }
+
+    public function isDirty()
+    {
+        return $this->isDirty;
+    }
+
+    public function getOriginalCopy()
+    {
+        if ($this->originalData) {
+            return new self($this->originalData);
+        } else {
+            return $this;
+        }
+    }
+
+    public function setEmbedded($embedded)
+    {
+        $this->isEmebdded = $embedded;
+    }
+
     public function save()
     {
+        if ($this->isEmebdded) {
+            throw new \Exception("Cannot persist embedded objects directly");
+        }
+
+        if (!$this->isDirty()) {
+            return;
+        }
+
         $mongoCollection = Connection::getCollection(static::$collectionName);
         if ($this->isManaged) {
             $data = $this->data;
@@ -89,10 +143,13 @@ class Document
 
     public function delete()
     {
+        if ($this->isEmebdded) {
+            throw new \Exception("Cannot persist embedded objects directly");
+        }
         Connection::getCollection(static::$collectionName)->remove(['_id' => $this->_id]);
     }
 
-    public static function hydrate($data = [], $isEmbedded = false)
+    public static function hydrate($data = [], $isEmbedded)
     {
         if (!$data){
             return null;
@@ -111,7 +168,10 @@ class Document
             unset($data['_class']);
             return $data;
         } else {
-            return (new $data['_class']($data));
+            $obj = new $data['_class']($data);
+            if ($isEmbedded) {
+                $obj->setEmbedded($isEmbedded);
+            }
         }
     }
 

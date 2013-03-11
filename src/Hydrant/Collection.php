@@ -36,7 +36,7 @@ class Collection implements \Iterator, \Countable
     }
 
     public function current()
-    {
+    {;
         if ($this->persistObjects) {
             if (isset($this->objects[$this->key()])) {
                 return $this->objects[$this->key()];
@@ -44,6 +44,7 @@ class Collection implements \Iterator, \Countable
         }
         $data = $this->cursor->current();
         $obj = Document::hydrate($data);
+        $obj->setManaged(true);
         if ($this->persistObjects) {
             $this->objects[] = $obj;
         }
