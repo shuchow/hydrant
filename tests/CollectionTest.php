@@ -1,6 +1,7 @@
 <?php
 
-use Hydrant\Collection;
+use Hydrant\Collection,
+    Hydrant\Connection;
 
 class ModelCollectionTest extends PHPUnit_Framework_TestCase
 {
@@ -9,21 +10,12 @@ class ModelCollectionTest extends PHPUnit_Framework_TestCase
     protected $records;
     protected $cursor;
 
-    public static function setUpBeforeClass()
-    {
-        self::$mongo = new Mongo;
-        self::$phactory = new Phactory(self::$mongo->test);
-        self::$phactory->define('test', ['testval1' => '$n', 'type' => 'basemodel']);
-
-    }
-
-    public static function tearDownAfterClass()
-    {
-        self::$mongo->dropDb('test');
-    }
-
     public function setup()
     {
+        $m = new MongoClient;
+        Connection::setMongoClient($m);
+        Connection::setDefaultDatabaseName('test');
+
         for ($c = 0; $c < 5; $c++) {
             $this->records[] = self::$phactory->create('test');
         }
