@@ -3,10 +3,8 @@
 use Hydrant\Collection,
     Hydrant\Connection;
 
-class ModelCollectionTest extends PHPUnit_Framework_TestCase
+class CollectionTest extends PHPUnit_Framework_TestCase
 {
-    protected static $mongo;
-    protected static $phactory;
     protected $records;
     protected $cursor;
 
@@ -17,15 +15,17 @@ class ModelCollectionTest extends PHPUnit_Framework_TestCase
         Connection::setDefaultDatabaseName('test');
 
         for ($c = 0; $c < 5; $c++) {
-            $this->records[] = self::$phactory->create('test');
+            $data = ["test$c" => "$c", "_id" => new MongoId];
+            $this->records[] = $data;
+            $m->test->default->insert($data);
         }
-        $this->cursor = self::$mongo->test->tests->find();
+        $this->cursor = $m->test->default->find();
 
     }
 
     public function tearDown()
     {
-        self::$phactory->recall();
+        Connection::getMongoClient()->dropDB('test');
     }
 
     public function testPersistObjects()
@@ -83,11 +83,11 @@ class ModelCollectionTest extends PHPUnit_Framework_TestCase
             $item = $items[$c];
 
             // first, we should have the right kind of object
-            $this->assertEquals('basemodel', $item->type);
+            $this->assertEquals('Hydrant\Document', get_class($item));
 
             // second, we should see the same values as the phactory-created records
             $sourceItem = $this->records[$c];
-            foreach (get_object_vars($item) as $key => $val) {
+            foreach ($item->getStorage() as $key => $val) {
                 $this->assertEquals($sourceItem[$key], $item->$key);
             }
         }
@@ -100,7 +100,7 @@ class ModelCollectionTest extends PHPUnit_Framework_TestCase
         // collect items from collection
         $items = [];
         foreach ($collection as $item) {
-            $items[] = get_object_vars($item);
+            $items[] = $item->getStorage();
         }
 
         // collect array data from raw mongo cursor

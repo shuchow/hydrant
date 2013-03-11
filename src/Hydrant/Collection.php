@@ -43,7 +43,7 @@ class Collection implements \Iterator, \Countable
             }
         }
         $data = $this->cursor->current();
-        $obj = BaseModel::hydrate($data);
+        $obj = Document::hydrate($data);
         if ($this->persistObjects) {
             $this->objects[] = $obj;
         }

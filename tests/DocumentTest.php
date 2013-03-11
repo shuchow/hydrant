@@ -99,7 +99,6 @@ class DocumentTest extends PHPUnit_Framework_TestCase
     {
         $mongoIds = [new MongoId, new MongoId, new MongoId];
         $stringIds = ['test1', 'test2', 'test3'];
-        $duplicateIds = [$mongoIds[1], $mongoIds[1]];
         $mixedIds = ['test1', new MongoId];
 
         $foundIds = [];
@@ -113,6 +112,7 @@ class DocumentTest extends PHPUnit_Framework_TestCase
             $foundIds [] = $doc->_id;
         }
         $this->assertEquals($mongoIds, $foundIds);
+        Connection::getMongoClient()->dropDB('test');
 
 
         $foundIds = [];
@@ -126,18 +126,7 @@ class DocumentTest extends PHPUnit_Framework_TestCase
             $foundIds [] = $doc->_id;
         }
         $this->assertEquals($stringIds, $foundIds);
-
-        $foundIds = [];
-        foreach ($duplicateIds as $id) {
-            $b = new Document;
-            $b->_id = $id;
-            $b->save();
-        }
-        $foundDocs = Document::findMany($duplicateIds);
-        foreach ($foundDocs as $doc) {
-            $foundIds [] = $doc->_id;
-        }
-        $this->assertEquals([$duplicateIds[0]], $foundIds);
+        Connection::getMongoClient()->dropDB('test');
 
         $foundIds = [];
         foreach ($mixedIds as $id) {
@@ -150,6 +139,7 @@ class DocumentTest extends PHPUnit_Framework_TestCase
             $foundIds [] = $doc->_id;
         }
         $this->assertEquals($mixedIds, $foundIds);
+        Connection::getMongoClient()->dropDB('test');
 
     }
 
