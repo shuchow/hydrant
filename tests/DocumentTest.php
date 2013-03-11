@@ -256,4 +256,12 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, $results->count());
         $this->assertEquals($b2->attr, $results->current()->attr);
     }
+
+    public function testGetCollection()
+    {
+        $collection = Document::getCollection();
+        $this->assertEquals('default', $collection->getName());
+        $collection = Document::getCollection('test');
+        $this->assertEquals('test', $collection->getName());
+    }
 }

@@ -190,9 +190,9 @@ class Document
         self::$collectionName = $collectionName;
     }
 
-    public static function getCollection()
+    public static function getCollection($collectionName = null)
     {
-        return Connection::getCollection(static::$collectionName);
+        return Connection::getCollection($collectionName ?: static::$collectionName);
     }
 
     public static function find($id)
