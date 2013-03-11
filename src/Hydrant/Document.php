@@ -79,6 +79,11 @@ class Document
         return $this->isDirty;
     }
 
+    public function isManaged()
+    {
+        return $this->isManaged;
+    }
+
     public function getOriginalCopy()
     {
         if ($this->originalData) {
@@ -111,12 +116,14 @@ class Document
                 ['_id' => $this->_id],
                 $data
             );
+            $this->isDirty = false;
         } else {
             if (!$this->_id) {
                 $this->_id = new \MongoId();
             }
             $data = $this->data;
             $this->fixPersistance($data);
+            $this->isManaged = true;
             $mongoCollection->insert($data);
         }
     }

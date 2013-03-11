@@ -66,7 +66,13 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         ];
 
         $doc = Document::hydrate($document1);
+        $this->assertFalse($doc->isManaged());
+        $this->assertFalse($doc->isDirty());
+
         $doc->save();
+
+        $this->assertTrue($doc->isManaged());
+        $this->assertFalse($doc->isDirty());
 
         $savedData = Connection::getCollection('default')->findOne(['_id' => $doc->_id]);
         $this->assertEquals($doc->foo, $savedData['foo']);
@@ -80,8 +86,34 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         } catch (MongoException $e) {
             $this->fail('no documents should be empty');
         }
+    }
+
+    public function testDirtyBits()
+    {
+        $doc1 = [
+            '_id' => 123,
+            'foo' => 'bar'
+        ];
+
+        $doc = Document::hydrate($doc1);
+        $this->assertFalse($doc->isDirty());
+        $this->assertFalse($doc->isManaged());
+
+        $doc->save();
+
+        $this->assertTrue($doc->isManaged());
+        $this->assertFalse($doc->isDirty());
+
+        $doc->foo = 'baz';
+
+        $this->assertTrue($doc->isDirty());
+
+        $doc->save();
+
+        $this->assertFalse($doc->isDirty());
 
     }
+
 
     public function testDelete()
     {
@@ -177,7 +209,7 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         $id_as_string = (string) $b1->_id;
         $b2 = Document::find($id_as_string);
         $this->assertNotNull($b2);
-        $this->assertEquals($b1, $b2);
+        $this->assertEquals($b1->getStorage(), $b2->getStorage());
     }
 
     public function testFindAll()
