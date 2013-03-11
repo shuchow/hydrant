@@ -140,9 +140,11 @@ class Document
                 $storage['_class'] = $val->getPersistenceType();
                 $val = $storage;
             }
-            foreach ($val as $key => &$val) {
-                if (is_array($val)) {
-                    $this->fixPersistance($val);
+            if (is_array($val)) {
+                foreach ($val as $key => &$value) {
+                    if (is_array($value)) {
+                        $this->fixPersistance($value);
+                    }
                 }
             }
         }

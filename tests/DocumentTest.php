@@ -86,6 +86,14 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         } catch (MongoException $e) {
             $this->fail('no documents should be empty');
         }
+
+        // test odd foreach bug in fixPersistence
+        $d = new Document;
+        $d->name = 'test';
+        $d->uid = 1;
+        $d->provider = new \MongoId();
+        $d->save();
+        $this->assertNotNull(Connection::getMongoClient()->test->default->find(['_id' => $d->_id]));
     }
 
     public function testDirtyBits()
