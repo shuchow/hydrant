@@ -16,11 +16,11 @@ class Document
     {
         $this->data = $data;
         $this->originalData = [];
-        $this->setPersistenceType($data['_class']);
+        $this->setPersistenceType($data['_class'] ?: get_class($this));
         unset($this->data['_class']);
     }
 
-    public function __get($property)
+    public function &__get($property)
     {
         return $this->data[$property];
     }
@@ -56,7 +56,7 @@ class Document
 
     public function setPersistenceType($persistenceType = null)
     {
-        $this->persistenceType = $persistenceType ?: get_class($this);
+        $this->persistenceType = $persistenceType ?: "stdClass";
     }
 
     public function getPersistenceType()
@@ -112,6 +112,8 @@ class Document
         if ($this->isManaged) {
             $data = $this->data;
             $this->fixPersistance($data);
+            $data["_class"] = $this->getPersistenceType();
+
             $options['upsert'] = $upsert;
             $mongoCollection->update(
                 ['_id' => $this->_id],
@@ -125,6 +127,7 @@ class Document
             }
             $data = $this->data;
             $this->fixPersistance($data);
+            $data["_class"] = $this->getPersistenceType();
             $this->isManaged = true;
             $mongoCollection->insert($data);
         }
@@ -141,6 +144,8 @@ class Document
                 $storage = $val->getStorage();
                 $storage['_class'] = $val->getPersistenceType();
                 $val = $storage;
+            } else if ($val instanceof \stdClass) {
+                $val = (array) $val;
             }
             if (is_array($val)) {
                 foreach ($val as $key => &$value) {
@@ -171,7 +176,6 @@ class Document
             return null;
         }
 
-        $data["_class"] = $data["_class"] ?: get_called_class();
         foreach ($data as $key => &$val) {
             if (is_array($val)) {
                 if (array_values($val) !== $val) {
@@ -184,12 +188,16 @@ class Document
             unset($data['_class']);
             return $data;
         } else {
-            $obj = new $data['_class']($data);
-            if ($isEmbedded) {
-                $obj->setEmbedded($isEmbedded);
-            }
-            if ($obj->_id) {
-                $obj->setManaged(true);
+            if (!$data["_class"]) {
+                $obj = (object) $data;
+            } else {
+                $obj = new $data['_class']($data);
+                if ($isEmbedded) {
+                    $obj->setEmbedded($isEmbedded);
+                }
+                if ($obj->_id) {
+                    $obj->setManaged(true);
+                }
             }
             return $obj;
         }

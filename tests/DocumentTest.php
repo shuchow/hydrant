@@ -43,12 +43,13 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('bar', $doc->foo);
         $this->assertEquals([1,2,3], $doc->baz);
         $this->assertEquals(['key1' => 'value1','key2' => 'value2'], $doc->test);
-        $this->assertInstanceOf('Hydrant\Document', $doc->test1);
+        $this->assertInstanceOf('stdClass', $doc->test1);
         $this->assertEquals('value1', $doc->test1->key1);
         $this->assertTrue($doc->isManaged());
 
         $document2 = [
-            'foo' => 'bar'
+            'foo' => 'bar',
+            '_class' => 'Hydrant\Document'
         ];
         $doc2 = Document::hydrate($document2);
         $this->assertFalse($doc2->isManaged());
@@ -83,7 +84,7 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         $savedData = Connection::getCollection('default')->findOne(['_id' => $doc->_id]);
         $this->assertEquals($doc->foo, $savedData['foo']);
         $this->assertEquals($doc->baz, $savedData['baz']);
-        $this->assertEquals(get_class($doc->test1), $savedData['test1']['_class']);
+        $this->assertInstanceOf('stdClass', $doc->test1);
         $this->assertEquals($doc->test, ['key1' => 'value1','key2' => 'value2']);
 
         try {
@@ -105,6 +106,7 @@ class DocumentTest extends PHPUnit_Framework_TestCase
     public function testDirtyBits()
     {
         $doc1 = [
+            '_class' => 'Hydrant\Document',
             'foo' => 'bar'
         ];
 
@@ -268,5 +270,19 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('default', $collection->getName());
         $collection = Document::getCollection('test');
         $this->assertEquals('test', $collection->getName());
+    }
+
+    public function testSetGet()
+    {
+        $d = new Document;
+        $d->foo[] = 'bar';
+        $this->assertEquals(['bar'], $d->foo);
+
+        $d->bar = 'baz';
+
+        $test = $d->bar;
+        $test = 'foo';
+        $this->assertEquals('baz', $d->bar);
+        $this->assertEquals('foo', $test);
     }
 }
