@@ -11,11 +11,12 @@ class CollectionTest extends PHPUnit_Framework_TestCase
     public function setup()
     {
         $m = new MongoClient;
+        $m->dropDB('test');
         Connection::setMongoClient($m);
         Connection::setDefaultDatabaseName('test');
 
         for ($c = 0; $c < 5; $c++) {
-            $data = ["test$c" => "$c", "_id" => new MongoId];
+            $data = ["test$c" => "$c", "_id" => new MongoId, "_class" => 'Hydrant\Document'];
             $this->records[] = $data;
             $m->test->default->insert($data);
         }
@@ -107,6 +108,7 @@ class CollectionTest extends PHPUnit_Framework_TestCase
         $this->cursor->reset();
         $rawItems = [];
         foreach ($this->cursor as $item) {
+            unset($item['_class']);
             $rawItems[] = $item;
         }
 
