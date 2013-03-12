@@ -45,6 +45,13 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(['key1' => 'value1','key2' => 'value2'], $doc->test);
         $this->assertInstanceOf('Hydrant\Document', $doc->test1);
         $this->assertEquals('value1', $doc->test1->key1);
+        $this->assertTrue($doc->isManaged());
+
+        $document2 = [
+            'foo' => 'bar'
+        ];
+        $doc2 = Document::hydrate($document2);
+        $this->assertFalse($doc2->isManaged());
     }
 
     public function testSave()
@@ -66,10 +73,9 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         ];
 
         $doc = Document::hydrate($document1);
-        $this->assertFalse($doc->isManaged());
         $this->assertFalse($doc->isDirty());
 
-        $doc->save();
+        $doc->save(true);
 
         $this->assertTrue($doc->isManaged());
         $this->assertFalse($doc->isDirty());
@@ -99,7 +105,6 @@ class DocumentTest extends PHPUnit_Framework_TestCase
     public function testDirtyBits()
     {
         $doc1 = [
-            '_id' => 123,
             'foo' => 'bar'
         ];
 

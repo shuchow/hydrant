@@ -98,13 +98,13 @@ class Document
         $this->isEmebdded = $embedded;
     }
 
-    public function save()
+    public function save($upsert = false)
     {
         if ($this->isEmebdded) {
             throw new \Exception("Cannot persist embedded objects directly");
         }
 
-        if (!$this->isDirty && $this->isManaged) {
+        if (!$this->isDirty && $this->isManaged && !$upsert) {
             return;
         }
 
@@ -112,9 +112,11 @@ class Document
         if ($this->isManaged) {
             $data = $this->data;
             $this->fixPersistance($data);
+            $options['upsert'] = $upsert;
             $mongoCollection->update(
                 ['_id' => $this->_id],
-                $data
+                $data,
+                $options
             );
             $this->isDirty = false;
         } else {
@@ -158,6 +160,11 @@ class Document
         Connection::getCollection(static::$collectionName)->remove(['_id' => $this->_id]);
     }
 
+    /**
+     * @param array $data
+     * @param bool $isEmbedded
+     * @return \Hydrant\Document
+     */
     public static function hydrate($data = [], $isEmbedded = false)
     {
         if (!$data){
@@ -180,6 +187,9 @@ class Document
             $obj = new $data['_class']($data);
             if ($isEmbedded) {
                 $obj->setEmbedded($isEmbedded);
+            }
+            if ($obj->_id) {
+                $obj->setManaged(true);
             }
             return $obj;
         }
