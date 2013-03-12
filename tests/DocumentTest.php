@@ -28,13 +28,8 @@ class DocumentTest extends PHPUnit_Framework_TestCase
             'foo'    => 'bar',
             'baz'    => [1,2,3],
             'test'   => [
-                '_class' => 'array',
                 'key1'   => 'value1',
                 'key2'   => 'value2'
-            ],
-            'test1' => [
-                'key1' => 'value1',
-                'key2' => 'value2'
             ]
         ];
 
@@ -42,9 +37,8 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('Hydrant\Document', get_class($doc));
         $this->assertEquals('bar', $doc->foo);
         $this->assertEquals([1,2,3], $doc->baz);
-        $this->assertEquals(['key1' => 'value1','key2' => 'value2'], $doc->test);
-        $this->assertInstanceOf('stdClass', $doc->test1);
-        $this->assertEquals('value1', $doc->test1->key1);
+        $this->assertInstanceOf('stdClass', $doc->test);
+        $this->assertEquals('value1', $doc->test->key1);
         $this->assertTrue($doc->isManaged());
 
         $document2 = [
@@ -63,13 +57,8 @@ class DocumentTest extends PHPUnit_Framework_TestCase
             'foo'    => 'bar',
             'baz'    => [1,2,3],
             'test'   => [
-                '_class' => 'array',
                 'key1'   => 'value1',
                 'key2'   => 'value2'
-            ],
-            'test1' => [
-                'key1' => 'value1',
-                'key2' => 'value2'
             ]
         ];
 
@@ -84,8 +73,7 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         $savedData = Connection::getCollection('default')->findOne(['_id' => $doc->_id]);
         $this->assertEquals($doc->foo, $savedData['foo']);
         $this->assertEquals($doc->baz, $savedData['baz']);
-        $this->assertInstanceOf('stdClass', $doc->test1);
-        $this->assertEquals($doc->test, ['key1' => 'value1','key2' => 'value2']);
+        $this->assertInstanceOf('stdClass', $doc->test);
 
         try {
             $document2 = new Document;

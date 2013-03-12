@@ -136,11 +136,7 @@ class Document
     private function fixPersistance(&$data)
     {
         foreach ($data as $key => &$val) {
-            if (is_array($val)) {
-                if (array_values($val) !== $val) {
-                    $val['_class'] = 'array';
-                }
-            } else if ($val instanceof \Hydrant\Document) {
+            if ($val instanceof \Hydrant\Document) {
                 $storage = $val->getStorage();
                 $storage['_class'] = $val->getPersistenceType();
                 $val = $storage;
@@ -184,23 +180,18 @@ class Document
             }
         }
 
-        if ($data['_class'] === 'array') {
-            unset($data['_class']);
-            return $data;
+        if (!$data["_class"]) {
+            $obj = (object) $data;
         } else {
-            if (!$data["_class"]) {
-                $obj = (object) $data;
-            } else {
-                $obj = new $data['_class']($data);
-                if ($isEmbedded) {
-                    $obj->setEmbedded($isEmbedded);
-                }
-                if ($obj->_id) {
-                    $obj->setManaged(true);
-                }
+            $obj = new $data['_class']($data);
+            if ($isEmbedded) {
+                $obj->setEmbedded($isEmbedded);
             }
-            return $obj;
+            if ($obj->_id) {
+                $obj->setManaged(true);
+            }
         }
+        return $obj;
     }
 
     public static function setCollectionName($collectionName)
