@@ -273,4 +273,23 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('baz', $d->bar);
         $this->assertEquals('foo', $test);
     }
+
+    public function testHydrationEmbeddedObjects()
+    {
+        $d = new Document;
+        $a = new ArrayObject();
+        $a['foo'] = 'bar';
+        $d->foo = 'bar';
+        $d->arrayObject = $a;
+        $d->save();
+
+        $data = Connection::getMongoClient()->test->default->findOne(['_id' => $d->_id]);
+        $this->assertEquals('bar', $data["foo"]);
+        $this->assertEquals('bar', $data["arrayObject"]["foo"]);
+        $this->assertEquals('ArrayObject', $data["arrayObject"]["_class"]);
+
+        $d2 = Document::hydrate($data);
+
+        $this->assertEquals($d, $d2);
+    }
 }

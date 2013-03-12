@@ -142,6 +142,10 @@ class Document
                 $val = $storage;
             } else if ($val instanceof \stdClass) {
                 $val = (array) $val;
+            } else if ($val instanceof \Traversable) {
+                $class = get_class($val);
+                $val = iterator_to_array($val);
+                $val['_class'] = $class;
             }
             if (is_array($val)) {
                 foreach ($val as $key => &$value) {
@@ -183,12 +187,18 @@ class Document
         if (!$data["_class"]) {
             $obj = (object) $data;
         } else {
-            $obj = new $data['_class']($data);
-            if ($isEmbedded) {
-                $obj->setEmbedded($isEmbedded);
-            }
-            if ($obj->_id) {
-                $obj->setManaged(true);
+            if (is_subclass_of($data["_class"], '\Hydrant\Document') || $data['_class'] == 'Hydrant\Document') {
+                $obj = new $data['_class']($data);
+                if ($isEmbedded) {
+                    $obj->setEmbedded($isEmbedded);
+                }
+                if ($obj->_id) {
+                    $obj->setManaged(true);
+                }
+            } else {
+                $objectData = $data;
+                unset($objectData['_class']);
+                $obj = new $data['_class']($objectData);
             }
         }
         return $obj;
