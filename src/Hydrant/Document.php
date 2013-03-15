@@ -1,7 +1,7 @@
 <?php
 namespace Hydrant;
 
-class Document
+class Document implements \JsonSerializable
 {
     protected $isEmebdded = false;
     protected $isManaged = false;
@@ -92,6 +92,19 @@ class Document
             return $this;
         }
     }
+
+    function jsonSerialize()
+    {
+        $data = $this->data;
+        $this->fixPersistance($data);
+        array_walk_recursive($data, function(&$val) {
+            if ($val instanceof \MongoId) {
+                $val = (string) $val;
+            }
+        });
+        return $data;
+    }
+
 
     public function setEmbedded($embedded)
     {

@@ -292,4 +292,28 @@ class DocumentTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($d, $d2);
     }
+
+    public function testJsonSerializable()
+    {
+        $documentData = [
+            '_id' => new \MongoId(),
+            'name' => 'testname1',
+            '_class' => 'Hydrant\Document',
+            'subObject' => [
+                'key1' => 'value1',
+                'key2' => 'value2',
+            ],
+            'arrayObject' => [
+                '_class' => 'ArrayObject',
+                'data1' => 'value1'
+            ]
+        ];
+        $obj = Document::hydrate($documentData);
+        $jsonObj = json_decode(json_encode($obj));
+
+        $this->assertEquals((string) $documentData["_id"], $jsonObj->_id);
+        $this->assertEquals('testname1', $jsonObj->name);
+        $this->assertEquals('value2', $jsonObj->subObject->key2);
+        $this->assertEquals('value1', $jsonObj->arrayObject->data1);
+    }
 }
