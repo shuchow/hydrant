@@ -144,6 +144,7 @@ class Document implements \JsonSerializable
             $this->isManaged = true;
             $mongoCollection->insert($data);
         }
+	$this->originalData = [];
     }
 
     private function fixPersistance(&$data)

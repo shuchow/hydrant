@@ -75,6 +75,15 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($doc->baz, $savedData['baz']);
         $this->assertInstanceOf('stdClass', $doc->test);
 
+	$originalDataEmpty = $doc->getOriginalData();
+	$doc->baz = 'test';
+	$originalDataSet = $doc->getOriginalData();
+	$doc->save();
+	$originalDataReset = $doc->getOriginalData();
+	$this->assertEmpty($originalDataEmpty);
+	$this->assertNotEmpty($originalDataSet);
+	$this->assertEmpty($originalDataReset);
+
         try {
             $document2 = new Document;
             $document2->save();
