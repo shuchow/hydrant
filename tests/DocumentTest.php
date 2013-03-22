@@ -343,4 +343,25 @@ class DocumentTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('value2', $jsonObj->subObject->key2);
         $this->assertEquals('value1', $jsonObj->arrayObject->data1);
     }
+
+    public function testPlusEqualsBug()
+    {
+        $documentData = [
+            '_id' => new \MongoId(),
+            'count' => 1,
+            '_class' => 'Hydrant\Document'
+        ];
+        $obj = Document::hydrate($documentData);
+        $obj->count++;
+        $this->assertTrue($obj->isDirty());
+
+        $documentData = [
+            '_id' => new \MongoId(),
+            'count' => 1,
+            '_class' => 'Hydrant\Document'
+        ];
+        $obj = Document::hydrate($documentData);
+        $obj->count += 1;
+        $this->assertTrue($obj->isDirty());
+    }
 }
