@@ -10,7 +10,7 @@ class Collection implements \Iterator, \Countable
 
     public function __construct($cursor, $persistObjects = false)
     {
-	if (is_array($cursor) {
+	if (is_array($cursor)) {
 	    $this->cursor = new \ArrayIterator($cursor);
 	}
 	else {
