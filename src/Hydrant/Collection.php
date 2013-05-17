@@ -8,9 +8,14 @@ class Collection implements \Iterator, \Countable
     private $currentPosition;
     private $persistObjects;
 
-    public function __construct(\MongoCursor $cursor, $persistObjects = false)
+    public function __construct($cursor, $persistObjects = false)
     {
-        $this->cursor = $cursor;
+	if (is_array($cursor) {
+	    $this->cursor = new \ArrayIterator($cursor);
+	}
+	else {
+	    $this->cursor = $cursor;
+	}
         $this->cursor->rewind();
         $this->currentPosition = 0;
         $this->objects = [];
