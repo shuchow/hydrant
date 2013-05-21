@@ -8,14 +8,9 @@ class Collection implements \Iterator, \Countable
     private $currentPosition;
     private $persistObjects;
 
-    public function __construct($cursor, $persistObjects = false)
+    public function __construct(\Iterator $cursor, $persistObjects = false)
     {
-	if (is_array($cursor)) {
-	    $this->cursor = new \ArrayIterator($cursor);
-	}
-	else {
 	    $this->cursor = $cursor;
-	}
         $this->cursor->rewind();
         $this->currentPosition = 0;
         $this->objects = [];
